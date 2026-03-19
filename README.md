@@ -4,6 +4,10 @@ A deadlock detection and prevention simulator built in C, with a browser-based v
 
 ---
 
+🔗 Live Demo: https://itsShlesha.github.io/adaptive-deadloack-simulator/
+
+---
+
 ## What it does
 
 The system simulates how an OS manages resources across multiple processes and handles deadlock scenarios. It is **adaptive** — it reads the resource configuration at startup and decides which algorithm to use:
