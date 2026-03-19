@@ -3,7 +3,7 @@
 ══════════════════════════════════════════════════════════════ */
 const bootLines = [
   'ADAPTIVE DEADLOCK MANAGEMENT SYSTEM v1.0',
-  'Copyright (C) 2025. All rights reserved.',
+  'Copyright (C) 2026. All rights reserved.',
   '',
   'Initializing memory subsystem........... OK',
   'Loading resource allocation tables...... OK',
