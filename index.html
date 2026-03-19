@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adaptive Deadlock Management System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div id="boot-screen">
+    <div id="boot-text"></div>
+  </div>
+
+  <div class="desktop" id="main-app" style="display:none">
+    <div class="window">
+
+      <div class="title-bar">
+        <span>&#9632; ADAPTIVE DEADLOCK MANAGEMENT SYSTEM v1.0</span>
+        <div class="title-bar-controls">
+          <div class="tb-btn">_</div>
+          <div class="tb-btn">&#9633;</div>
+          <div class="tb-btn">&#10005;</div>
+        </div>
+      </div>
+
+      <div class="window-body">
+
+        <div class="tab-bar">
+          <div class="tab active"  onclick="switchTab('init')"   >1. INIT</div>
+          <div class="tab"         onclick="switchTab('state')"  >2. STATE</div>
+          <div class="tab"         onclick="switchTab('banker')" >3. BANKER'S</div>
+          <div class="tab"         onclick="switchTab('rag')"    >4. RAG</div>
+          <div class="tab"         onclick="switchTab('detect')" >5. DETECT</div>
+          <div class="tab"         onclick="switchTab('request')">6. REQUEST</div>
+          <div class="tab"         onclick="switchTab('sim')"    >7. SIMULATE</div>
+        </div>
+
+        <div class="tab-panel active" id="panel-init">
+          <div class="section-title">SYSTEM INITIALIZATION</div>
+          <div class="field-row">
+            <label>Processes (1-5):</label>
+            <input type="number" id="num-p" min="1" max="5" value="3">
+            <label>Resources (1-5):</label>
+            <input type="number" id="num-r" min="1" max="5" value="3">
+            <button class="btn" onclick="buildInputs()">BUILD MATRICES</button>
+          </div>
+          <div id="matrix-inputs" style="display:none">
+            <hr class="divider">
+            <div class="matrix-label">TOTAL INSTANCES PER RESOURCE:</div>
+            <div class="field-row" id="total-inputs"></div>
+            <hr class="divider">
+            <div style="display:flex; gap:40px; flex-wrap:wrap;">
+              <div>
+                <div class="matrix-label">ALLOCATION MATRIX:</div>
+                <div id="alloc-grid"></div>
+              </div>
+              <div>
+                <div class="matrix-label">MAX MATRIX:</div>
+                <div id="max-grid"></div>
+              </div>
+            </div>
+            <hr class="divider">
+            <button class="btn btn-primary" onclick="initSystem()">&#9654; INITIALIZE SYSTEM</button>
+          </div>
+          <div class="terminal" id="term-init">> ADAPTIVE DEADLOCK MANAGEMENT SYSTEM
+> Enter process and resource counts above.
+> Press BUILD MATRICES to configure inputs.</div>
+        </div>
+
+        <div class="tab-panel" id="panel-state">
+          <div class="section-title">SYSTEM STATE</div>
+          <div class="bv-legend">
+            <div class="legend-item"><div class="block block-held">█</div><span>ALLOCATED</span></div>
+            <div class="legend-item"><div class="block block-need">░</div><span>STILL NEEDED</span></div>
+          </div>
+          <div class="block-viz" id="block-viz">
+            <span style="color:var(--green-dim);font-family:var(--font-mono);font-size:14px">— initialise system first —</span>
+          </div>
+          <hr class="divider">
+          <div class="field-row">
+            <span style="font-family:var(--font-mono);font-size:14px;color:var(--green-dim)">AVAILABLE:</span>
+            <div id="avail-display" style="font-family:var(--font-mono);font-size:14px;color:var(--green)">—</div>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="panel-banker">
+          <div class="section-title">BANKER'S ALGORITHM — SAFE STATE CHECK</div>
+          <button class="btn btn-primary" onclick="runBanker()">&#9654; RUN BANKER'S</button>
+          <div id="seq-display-wrap" style="display:none;margin-top:16px;">
+            <div style="font-family:var(--font-mono);font-size:13px;color:var(--green-dim);margin-bottom:8px;">SAFE SEQUENCE — processes light up in execution order:</div>
+            <div class="seq-display" id="seq-display"></div>
+          </div>
+          <div class="terminal" id="term-banker">> Run Banker's Algorithm to check system safety.</div>
+        </div>
+
+        <div class="tab-panel" id="panel-rag">
+          <div class="section-title">RESOURCE ALLOCATION GRAPH</div>
+          <button class="btn" onclick="drawRAG()">&#9654; BUILD &amp; DRAW RAG</button>
+          <div style="margin-top:14px;"><canvas id="rag-canvas" height="380"></canvas></div>
+          <div class="terminal" id="term-rag">> Press BUILD & DRAW RAG to visualize current state.
+> Circles = Processes   Diamonds = Resources
+> Dim dashed arrow   = Request edge  (P wants R)
+> Bright solid arrow = Assignment edge (R held by P)</div>
+        </div>
+
+        <div class="tab-panel" id="panel-detect">
+          <div class="section-title">DEADLOCK DETECTION — DFS CYCLE CHECK</div>
+          <button class="btn btn-primary" onclick="detectDeadlock()">&#9654; RUN DFS DETECTION</button>
+          <div class="terminal" id="term-detect">> Runs DFS on the Resource Allocation Graph.
+> Single-instance: cycle = DEADLOCK CONFIRMED
+> Multi-instance:  cycle = POTENTIAL DEADLOCK</div>
+        </div>
+
+        <div class="tab-panel" id="panel-request">
+          <div class="section-title">RESOURCE REQUEST SIMULATION</div>
+          <div class="field-row">
+            <label>Process ID:</label>
+            <input type="number" id="req-pid" min="0" max="4" value="0">
+          </div>
+          <div class="matrix-label">Request vector:</div>
+          <div class="field-row" id="req-vector"></div>
+          <div class="field-row" style="margin-top:8px;">
+            <button class="btn btn-primary" onclick="requestResource()">&#9654; SUBMIT REQUEST</button>
+          </div>
+          <div class="terminal" id="term-request">> Enter process ID and request vector.
+> System will validate and run Banker's.
+> Dynamic Max update attempted if request exceeds Need.</div>
+        </div>
+
+        <div class="tab-panel" id="panel-sim">
+          <div class="section-title">RANDOM REQUEST SIMULATION</div>
+          <div class="field-row">
+            <label>Simulation rounds:</label>
+            <input type="number" id="sim-rounds" min="1" max="50" value="5">
+            <button class="btn btn-primary" onclick="runSimulation()">&#9654; RUN SIMULATION</button>
+          </div>
+          <div class="terminal" id="term-sim">> Random simulation picks a process each round,
+> generates a request within its Need,
+> validates against Banker's Algorithm.
+> Periodic sweep fires every 3 confirmed allocations.</div>
+        </div>
+
+      </div>
+
+      <div class="status-bar">
+        <div class="status-item">MODE: <span id="sb-mode">—</span></div>
+        <div class="status-item">PROCESSES: <span id="sb-p">—</span></div>
+        <div class="status-item">RESOURCES: <span id="sb-r">—</span></div>
+        <div class="status-item">ALLOCS: <span id="sb-alloc">0</span></div>
+        <div class="status-item">SWEEPS: <span id="sb-sweep">0</span></div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
